@@ -4,11 +4,12 @@ import { MOCK_DATA } from "../mockdata/mockdata";
 import { MockData } from "../types/mockdataType";
 
 const ProductList = () => {
-  const PER_PAGE = 10;
   const [data, setData] = useState<MockData[]>([]);
-  const [page, setPage] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  const PER_PAGE = 10;
+  const page = useRef(0);
 
   // 페이지는 1부터 시작함
   const getMockData = (pageNum: number) => {
@@ -27,14 +28,15 @@ const ProductList = () => {
 
   const loadMoreRef = useRef(null);
 
+  //useIntersectionObserver 훅에 넘겨줄 콜백함수
   const loadMore = useCallback(() => {
     if (isLoading || !hasMore) return;
 
     setIsLoading(true);
-    getMockData(page).then((result: any) => {
+    getMockData(page.current).then((result: any) => {
       setIsLoading(false);
       setData((prev) => [...prev, ...result.datas]);
-      setPage((prev) => prev + 1);
+      page.current += 1;
       setHasMore(!result.isEnd);
     });
   }, [page, isLoading, hasMore]);
@@ -48,17 +50,21 @@ const ProductList = () => {
     }
     return () => {
       if (currentRef) {
-        observe(currentRef);
+        unobserve(currentRef);
       }
     };
   }, [observe, unobserve]);
 
+  //가격 총합 계산
+  const totalPrice = data.reduce((acc, data) => acc + data.price, 0);
+
   return (
-    <div className="">
+    <main>
       <h1 className="flex justify-center text-[32px] my-6">
         프리온보딩 FE 챌린지 10월 (2024) 리액트 오픈소스 펼쳐보기 사전 미션
       </h1>
       <ul className="flex flex-col gap-4 items-center">
+        <p>가격 총액: {totalPrice}</p>
         {data.map((data) => (
           <li key={data.productId} className="border-2 p-2 text-[20px]">
             <p>id: {data.productId}</p>
@@ -81,7 +87,7 @@ const ProductList = () => {
           No more products to load
         </div>
       )}
-    </div>
+    </main>
   );
 };
 

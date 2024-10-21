@@ -6,10 +6,12 @@ export default function useIntersectionObserver(callback: () => void) {
   const observe = useCallback(
     (el: Element) => {
       if (observer.current) observer.current.disconnect();
-      observer.current = new IntersectionObserver(
+      observer.current = new IntersectionObserver( //IntersectionObserver 생성
         (entries) => {
+          console.log(entries);
           if (entries[0].isIntersecting) {
-            callback();
+            //대상 요소가 관찰자 루트와 교차할 경우
+            callback(); //callback fn 실행
           }
         },
         { threshold: 0.1 }
